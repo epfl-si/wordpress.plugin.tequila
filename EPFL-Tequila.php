@@ -2,7 +2,7 @@
 /*
  * Plugin Name: EPFL Tequila
  * Description: Authenticate to WordPress with Tequila
- * Version:     0.16 (vpsi)
+ * Version:     0.17 (vpsi)
  * Author:      Dominique Quatravaux
  * Author URI:  mailto:dominique.quatravaux@epfl.ch
  */
@@ -145,7 +145,7 @@ class Controller
             return;
         }
 
-        $params = array("key" => $_GET["key"]);
+        $params = array("key" => $_GET["key"], "auth_check" => $_GET["auth_check"]);
         if ($this->allowedrequesthosts !== NULL) {
             $params["allowedrequesthosts"]=$this->allowedrequesthosts;
         }

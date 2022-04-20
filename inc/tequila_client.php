@@ -80,6 +80,8 @@ class TequilaClient
             $requestInfos ['language'] = $this->aLanguages [$this->iLanguage];
         }
 
+        $requestInfos ['mode_auth_check'] = '1';  // since Tequila 2.1
+
         /* Asking tequila */
         $response = $this->askTequila('createrequest', $requestInfos);
 
