@@ -57,10 +57,10 @@ class Controller
     {
         add_action('init', array($this, 'maybe_back_from_tequila'));
         add_action('init', array($this, 'setup_tequila_auth'));
+        $this->settings->hook();
         if ($this->settings->get("has_user_edit_sciper")) {
             (new UserEditSciperController())->hook();
         }
-        $this->settings->hook();
     }
 
     function setup_tequila_auth()

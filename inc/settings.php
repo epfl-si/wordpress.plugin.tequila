@@ -34,6 +34,8 @@ if (! defined('ABSPATH')) {
 if (! class_exists('EPFL\SettingsBase')):
 class SettingsBase
 {
+    private $defaults = Array();
+
     public function hook()
     { 
     }
@@ -48,9 +50,9 @@ class SettingsBase
     {
         $optname = $this->option_name($key);
         if ( $this->is_network_version() ) {
-            return get_site_option( $optname );
+            return get_site_option( $optname, $this->defaults[$key] );
         } else {
-            return get_option( $optname );
+            return get_option( $optname, $this->defaults[$key] );
         }
     }
 
@@ -241,11 +243,12 @@ class SettingsBase
     }
 
     /**
-     * Like WordPress' register_setting, only simpler
+     * Like WordPress' register_setting, only better
      *
-     * If a method called "sanitize_$key" exists, it is automagically
-     * used as $args["sanitize_callback"] (unless that key is set
-     * explicitly).
+     * - Register the default value, if any, so that `->get()` sees it
+     * - If a method called "sanitize_$key" exists, it is automagically
+     *   used as $args["sanitize_callback"] (unless that key is set
+     *   explicitly).
      */
     function register_setting ($key, $args)
     {
@@ -257,6 +260,9 @@ class SettingsBase
             $this->option_group(),
             $this->option_name($key),
             $args);
+        if (isset($args['default'])) {
+            $this->defaults[$key] = $args['default'];
+        }
     }
 
     /**
