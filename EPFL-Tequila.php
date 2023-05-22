@@ -58,6 +58,9 @@ class Controller
         add_action('init', array($this, 'maybe_back_from_tequila'));
         add_action('init', array($this, 'setup_tequila_auth'));
         $this->settings->hook();
+        if ($this->settings->get("has_user_edit_sciper")) {
+            (new UserEditSciperController())->hook();
+        }
     }
 
     function setup_tequila_auth()
@@ -222,6 +225,11 @@ class Settings extends \EPFL\SettingsBase
             'default' => true
         ));
 
+        $this->register_setting('has_user_edit_sciper', array(
+            'type'    => 'boolean',
+            'default' => false
+        ));
+
         $this->add_options_page(
             ___('Réglages de Tequila'),                 // $page_title,
             ___('Tequila (auth)'),                      // $menu_title,
@@ -249,6 +257,18 @@ class Settings extends \EPFL\SettingsBase
                 'help' => ___('Le réglage «Activée» permet d\'utiliser simultanément Tequila et l\'authentification par nom / mot de passe livrée avec WordPress')
             )
         );
+
+        $this->add_settings_field(
+            'section_settings', 'has_user_edit_sciper', ___('Édition du SCIPER des utilisateurs'),
+            array(
+                'type'        => 'radio',
+                'options'     => array(
+                    '1'           => ___('Activé'),
+                    '0'           => ___('Désactivé')
+                ),
+                'help' => ___('Recommandé si vous n\'utilisez pas le plug-in accred. Ce réglage permet à un utilisateur WordPress créé manuellement, de se connecter via Tequila si les SCIPER concordent.')
+            )
+        );
     }
 
     function render_section_about()
@@ -272,6 +292,48 @@ class Settings extends \EPFL\SettingsBase
     function render_section_settings()
     {
         // Nothing — The fields in this section speak for themselves
+    }
+}
+
+class UserEditSciperController {
+    public function __construct ()
+    {
+    }
+
+    public function hook ()
+    {
+        add_action( 'show_user_profile', array($this, 'extra_user_profile_fields') );
+        add_action( 'edit_user_profile', array($this, 'extra_user_profile_fields') );
+        add_action( 'personal_options_update', array($this, 'save_extra_user_profile_fields' ));
+        add_action( 'edit_user_profile_update', array($this, 'save_extra_user_profile_fields' ));
+    }
+
+    public function extra_user_profile_fields ($user)
+    {
+        ?>
+    <table class="form-table">
+    <tr>
+        <th><label for="address"><?php _e("SCIPER"); ?></label></th>
+        <td>
+            <input type="text" name="sciper" id="sciper" value="<?php echo esc_attr( get_the_author_meta( 'user_nicename', $user->ID ) ); ?>" class="regular-text" /><br />
+            <span class="description"><?php _e("Please enter the SCIPER number for this user."); ?></span>
+        </td>
+    </tr>
+    </table>
+        <?php
+    }
+
+    function save_extra_user_profile_fields ($user_id)
+    {
+        if ( empty( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'update-user_' . $user_id ) ) {
+            return;
+        }
+
+        if ( !current_user_can( 'edit_user', $user_id ) ) {
+            return false;
+        }
+
+        wp_update_user( array('ID' => $user_id, 'user_nicename' => $_POST['sciper'] ) );
     }
 }
 
