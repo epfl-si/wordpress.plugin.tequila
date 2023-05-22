@@ -227,7 +227,7 @@ class Settings extends \EPFL\SettingsBase
 
         $this->register_setting('has_user_edit_sciper', array(
             'type'    => 'boolean',
-            'default' => true
+            'default' => false
         ));
 
         $this->add_options_page(
